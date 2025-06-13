@@ -6,6 +6,7 @@
   let books = []
   let isLoading = false
   let error = null
+  let searchComponent
 
   async function handleSearch(event) {
     const { query } = event.detail
@@ -19,13 +20,14 @@
       books = []
     } finally {
       isLoading = false
+      searchComponent.dispatch('searchEnd')
     }
   }
 </script>
 
 <main>
   <h1>Gutenberg Search</h1>
-  <Search on:search={handleSearch} />
+  <Search bind:this={searchComponent} on:search={handleSearch} />
   <BookList {books} {isLoading} {error} />
 </main>
 
