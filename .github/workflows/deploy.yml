@@ -7,5 +7,5 @@ jobs:
     - name: Update image tags
       run: |
         cd k8s/base
-        kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:sha-5b72ac8
-        kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:sha-de2beff
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:latest
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:latest

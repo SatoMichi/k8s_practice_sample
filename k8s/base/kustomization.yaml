@@ -10,6 +10,6 @@ commonLabels:
 
 images:
 - name: ghcr.io/satomichi/k8s-practice-frontend
-  newTag: sha-5b72ac8
+  newTag: latest
 - name: ghcr.io/satomichi/k8s-practice-backend
-  newTag: sha-de2beff
+  newTag: latest

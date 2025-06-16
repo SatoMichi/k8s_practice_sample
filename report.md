@@ -133,3 +133,65 @@
 4. **運用性の向上**
    - モニタリングの追加
    - ログ集約の実装
+
+### Next Action:
+
+#### 現在の状態
+- Namespace: `satomichi`を使用
+- バックエンド: 正常動作（2/2 Running）
+- フロントエンド: 設定の問題あり（2/2 Runningだが、nginxの設定が正しく反映されていない）
+
+#### 実行したコマンド
+```bash
+# デプロイ
+kubectl apply -f gutenberg-deployment.yaml
+kubectl apply -f gutenberg-service.yaml
+
+# 設定の確認
+kubectl get pods -n satomichi
+kubectl get services -n satomichi
+kubectl get endpoints -n satomichi
+
+# デバッグ
+kubectl run -n satomichi frontend-debug --image=ghcr.io/satomichi/k8s-practice-frontend:latest --rm -it -- /bin/sh
+cat /etc/nginx/conf.d/default.conf
+ls -la /usr/share/nginx/html/
+cat /usr/share/nginx/html/index.html
+
+# ポートフォワーディング
+kubectl port-forward -n satomichi svc/gutenberg-frontend 8888:80
+kubectl port-forward -n satomichi svc/gutenberg-backend 8889:8000
+```
+
+#### 発生した問題
+1. フロントエンドのnginx設定で`backend`というホスト名を解決できない
+   - エラーメッセージ: `host not found in upstream "backend"`
+   - 原因: イメージ内のnginx設定ファイルが`backend`を参照している
+
+2. ConfigMapで設定を更新したが、正しく反映されていない
+   - 現在の設定: `proxy_pass http://backend:8000/;`
+   - 必要な設定: `proxy_pass http://gutenberg-backend:8000/;`
+
+#### 次のアクション
+1. ConfigMapの更新
+   - `nginx-config.yaml`の内容を確認
+   - `backend`を`gutenberg-backend`に変更
+   - ConfigMapを再適用
+
+2. Deploymentの更新
+   - アノテーションを更新して強制的に再作成
+   - 新しい設定が正しく反映されることを確認
+
+3. 動作確認
+   - フロントエンドのUIが正しく表示されるか
+   - バックエンドとの通信が機能するか
+   - 検索機能が動作するか
+
+#### 参考情報
+- フロントエンドのファイルは正しく配置されている
+  - `index.html`
+  - `assets/`ディレクトリ（`index-BYYhCigA.js`と`index-QG0Ue1sP.css`）
+  - `vite.svg`
+  - `50x.html`
+- バックエンドは正常に動作している
+- ポートフォワーディングは正しく設定されている
