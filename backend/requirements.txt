@@ -9,3 +9,6 @@ scikit-learn==1.4.0  # TF-IDFベクトル化用
 # 開発用依存関係
 flake8==7.0.0  # コードスタイルチェック
 mypy==1.8.0  # 型チェック
+pytest==8.0.0  # テスト実行
+pytest-asyncio==0.23.5  # 非同期テスト用
+httpx==0.26.0  # テスト用HTTPクライアント
