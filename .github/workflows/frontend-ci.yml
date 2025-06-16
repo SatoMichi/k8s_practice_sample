@@ -13,44 +13,14 @@ on:
       - '.github/workflows/frontend-ci.yml'
 
 jobs:
-  test:
+  build-and-push:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend
+    permissions:
+      contents: read
+      packages: write
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Debug directory structure
-      run: |
-        echo "Current directory: $(pwd)"
-        echo "Directory contents:"
-        ls -la
-        echo "Parent directory contents:"
-        ls -la ..
-
-    - name: Fix file permissions
-      run: |
-        echo "Current directory: $(pwd)"
-        if [ -d "frontend" ]; then
-          cd frontend
-        elif [ -d "../frontend" ]; then
-          cd ../frontend
-        else
-          echo "Error: frontend directory not found"
-          exit 1
-        fi
-        echo "Changed to directory: $(pwd)"
-        echo "Fixing file permissions..."
-        find . -type f -exec chmod 644 {} \;
-        find . -type d -exec chmod 755 {} \;
-        echo "Directory contents after permission fix:"
-        ls -la
-        echo "src/lib contents after permission fix:"
-        ls -la src/lib/
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
@@ -60,62 +30,12 @@ jobs:
         cache-dependency-path: './frontend/package-lock.json'
 
     - name: Install dependencies
-      run: |
-        echo "Current directory: $(pwd)"
-        if [ -d "frontend" ]; then
-          cd frontend
-        elif [ -d "../frontend" ]; then
-          cd ../frontend
-        else
-          echo "Error: frontend directory not found"
-          exit 1
-        fi
-        echo "Changed to directory: $(pwd)"
-        npm ci
+      working-directory: ./frontend
+      run: npm ci
 
-    - name: Check source files
-      run: |
-        echo "Current directory: $(pwd)"
-        if [ -d "frontend" ]; then
-          cd frontend
-        elif [ -d "../frontend" ]; then
-          cd ../frontend
-        else
-          echo "Error: frontend directory not found"
-          exit 1
-        fi
-        echo "Changed to directory: $(pwd)"
-        echo "Directory contents:"
-        ls -la
-        echo "src/lib contents:"
-        ls -la src/lib/
-        test -f src/lib/Search.svelte
-        test -f src/lib/BookList.svelte
-        test -f src/lib/api.js
-
-    - name: Run build
-      run: |
-        echo "Current directory: $(pwd)"
-        if [ -d "frontend" ]; then
-          cd frontend
-        elif [ -d "../frontend" ]; then
-          cd ../frontend
-        else
-          echo "Error: frontend directory not found"
-          exit 1
-        fi
-        echo "Changed to directory: $(pwd)"
-        npm run build
-
-  build-and-push:
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-    - uses: actions/checkout@v4
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
