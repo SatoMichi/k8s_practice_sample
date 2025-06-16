@@ -19,6 +19,8 @@
 ```
 k8s_practice_sample/
 ├── backend/      # FastAPIバックエンド
+│   ├── app/     # アプリケーションコード
+│   └── tests/   # テストコード
 ├── frontend/     # Svelteフロントエンド
 ├── README.md
 └── .gitignore
@@ -30,12 +32,14 @@ k8s_practice_sample/
   - NLTK（Gutenbergコーパス）
   - scikit-learn（TF-IDF）
   - Uvicorn
+  - pytest（テスト）
 
 - **フロントエンド**
   - Svelte
   - Vite
   - Tailwind CSS
   - fetch API
+  - Vitest（テスト）
 
 ## 3. 開発環境のセットアップ
 
@@ -53,6 +57,15 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+### バックエンドのテスト実行
+```bash
+cd backend
+# 仮想環境が有効化されていることを確認
+pytest tests/  # すべてのテストを実行
+pytest tests/ -v  # 詳細な出力でテストを実行
+pytest tests/ -k "test_search"  # 特定のテストのみ実行
+```
+
 ### フロントエンドのセットアップ
 ```bash
 cd frontend
@@ -60,12 +73,59 @@ npm install
 npm run dev
 ```
 
+### フロントエンドのテスト実行
+```bash
+cd frontend
+npm test  # すべてのテストを実行
+npm test -- -t "Search"  # 特定のテストのみ実行
+```
+
 ### 動作確認
 - バックエンド: http://localhost:8000
 - フロントエンド: http://localhost:5173
 - API仕様: http://localhost:8000/docs
 
-## 4. 検索アルゴリズムの説明
+## 4. テスト戦略
+
+### バックエンドテスト
+1. **ユニットテスト**
+   - `pytest`を使用
+   - テストファイル: `backend/tests/`
+   - 主要なテストケース:
+     - 検索エンドポイント（`test_api.py`）
+       - 正常系の検索
+       - 空クエリの処理
+       - 検索結果の制限
+     - 本の詳細情報取得（`test_api.py`）
+       - 存在する本の取得
+       - 存在しない本のエラー処理
+   - テストカバレッジの確認:
+     ```bash
+     pytest --cov=app tests/
+     ```
+
+2. **統合テスト**
+   - FastAPIの`TestClient`を使用
+   - エンドポイント間の連携テスト
+   - データベース（NLTKコーパス）との連携テスト
+
+3. **テストの実行環境**
+   - 開発環境: ローカルマシン
+   - CI環境: GitHub Actions（予定）
+
+### フロントエンドテスト
+1. **コンポーネントテスト**
+   - `Vitest`を使用
+   - テストファイル: `frontend/__tests__/`
+   - 主要なテストケース:
+     - 検索フォーム（`Search.test.svelte`）
+     - 検索結果表示（`BookList.test.svelte`）
+
+2. **E2Eテスト**
+   - Playwrightを使用（予定）
+   - ユーザーフロー全体のテスト
+
+## 5. 検索アルゴリズムの説明
 
 ### TF-IDFとコサイン類似度による検索
 
@@ -118,32 +178,6 @@ npm run dev
    - 同義語や類義語の関係を考慮しない
    - 語幹化（ステミング）を行わない
 
-## 5. フロントエンドの実装
-
-### 主要コンポーネント
-
-1. **Search.svelte**
-   - 検索フォームの実装
-   - 検索クエリの入力と送信
-   - エラーハンドリング
-   - ローディング状態の管理
-
-2. **BookList.svelte**
-   - 検索結果の表示
-   - 本のタイトルと類似度スコアの表示
-   - レスポンシブデザイン
-   - ページネーション（実装予定）
-
-3. **APIクライアント（api.js）**
-   - バックエンドAPIとの通信
-   - エラーハンドリング
-   - レスポンスの型定義
-
-### 開発環境
-- 開発サーバー: `npm run dev`（http://localhost:5173）
-- ホットリロード対応
-- 環境変数による設定管理
-
 ## 6. 今後の改善計画
 
 ### 1. 検索機能の改善
@@ -160,15 +194,15 @@ npm run dev
 - [ ] ダークモード対応
 - [ ] アクセシビリティの向上
 
-### 3. テストの実装
+### 3. テストの拡充
 - [ ] バックエンド
-  - [ ] ユニットテスト（pytest）
-  - [ ] 統合テスト
-  - [ ] パフォーマンステスト
+  - [ ] パフォーマンステストの追加
+  - [ ] エッジケースのテスト追加
+  - [ ] モックの活用
 - [ ] フロントエンド
-  - [ ] コンポーネントテスト（Vitest）
-  - [ ] E2Eテスト（Playwright）
+  - [ ] E2Eテストの実装
   - [ ] アクセシビリティテスト
+  - [ ] パフォーマンステスト
 
 ### 4. インフラストラクチャ
 - [ ] Dockerfileの作成
