@@ -103,10 +103,11 @@ class GutenbergCorpus:
         for idx in top_indices:
             book_id = list(self.books.keys())[idx]
             book_info = self.books[book_id]
+            author = self._extract_author(book_id)  # 著者情報を取得
             results.append({
                 'book_id': book_id,
                 'title': book_info['title'],
-                'author': book_info['author'],
+                'author': author,  # 著者情報を追加
                 'similarity_score': float(similarities[idx]),
                 'word_count': book_info['words']
             })

@@ -1,5 +1,5 @@
 // APIのベースURLを環境に応じて設定
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:8000';  // バックエンドのURL
 
 /**
  * 本を検索する
@@ -12,8 +12,7 @@ export async function searchBooks(query) {
         if (!response.ok) {
             throw new Error('検索リクエストに失敗しました');
         }
-        const data = await response.json();
-        return data.results;
+        return await response.json();
     } catch (error) {
         console.error('検索エラー:', error);
         throw error;

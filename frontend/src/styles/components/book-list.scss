@@ -1,0 +1,91 @@
+.book-list {
+  max-width: 42rem;  // max-w-2xl
+  margin: 0 auto;
+  padding: 1rem;  // p-4
+
+  .loading {
+    text-align: center;
+    padding: 2rem 0;
+    color: #4b5563;
+    font-size: 1.125rem;
+  }
+
+  .error {
+    padding: 1rem;
+    margin: 1rem 0;
+    color: #b91c1c;
+    background-color: #fee2e2;
+    border-radius: 0.5rem;
+    border-left: 4px solid #b91c1c;
+  }
+
+  .books {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .book-card {
+    padding: 1.5rem;
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    border: 1px solid #e5e7eb;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-color: #d1d5db;
+    }
+
+    .book-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .book-author {
+      font-size: 0.9375rem;
+      color: #4b5563;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .book-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .book-score {
+      color: #059669;
+      background-color: #ecfdf5;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-weight: 500;
+    }
+
+    .book-word-count {
+      color: #6b7280;
+      background-color: #f3f4f6;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+    }
+  }
+
+  .empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 3rem 0;
+    font-size: 1.125rem;
+    background-color: #f9fafb;
+    border-radius: 0.75rem;
+    border: 1px dashed #d1d5db;
+  }
+}

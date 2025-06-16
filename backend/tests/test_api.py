@@ -12,9 +12,11 @@ def test_search_endpoint(client: TestClient) -> None:
     assert len(data) > 0
     assert all(isinstance(item, dict) for item in data)
     assert all(
-        "title" in item and 
-        "similarity_score" in item and 
-        "author" in item
+        "book_id" in item and
+        "title" in item and
+        "similarity_score" in item and
+        "author" in item and
+        "word_count" in item
         for item in data
     )
 
