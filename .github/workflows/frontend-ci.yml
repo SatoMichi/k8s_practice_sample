@@ -32,6 +32,13 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Check source files
+      run: |
+        ls -la src/lib/
+        test -f src/lib/Search.svelte
+        test -f src/lib/BookList.svelte
+        test -f src/lib/api.js
+
     - name: Run build
       run: npm run build
 
