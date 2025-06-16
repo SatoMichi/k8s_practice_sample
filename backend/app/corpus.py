@@ -1,12 +1,17 @@
 import nltk
 from nltk.corpus import gutenberg
-from typing import List, Dict, Tuple
+from typing import List, Dict, Any, Optional
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from scipy.sparse import csr_matrix
 
 class GutenbergCorpus:
-    def __init__(self):
+    books: Dict[str, Dict[str, Any]]
+    vectorizer: TfidfVectorizer
+    tfidf_matrix: Optional[csr_matrix]
+
+    def __init__(self) -> None:
         # NLTKデータのダウンロード
         try:
             nltk.data.find('corpora/gutenberg')
@@ -18,7 +23,7 @@ class GutenbergCorpus:
         self.tfidf_matrix = None
         self._load_books()
     
-    def _load_books(self):
+    def _load_books(self) -> None:
         """Gutenbergコーパスから本を読み込み、TF-IDFベクトルを計算"""
         # 利用可能な本のリストを取得
         book_ids = gutenberg.fileids()
@@ -41,7 +46,7 @@ class GutenbergCorpus:
         texts = [book['text'] for book in self.books.values()]
         self.tfidf_matrix = self.vectorizer.fit_transform(texts)
     
-    def search(self, query: str, top_k: int = 5) -> List[Dict]:
+    def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """
         クエリに基づいて本を検索
         
@@ -52,6 +57,9 @@ class GutenbergCorpus:
         Returns:
             検索結果のリスト（本の情報と類似度スコア）
         """
+        if not query.strip():
+            return []
+
         # クエリをTF-IDFベクトルに変換
         query_vector = self.vectorizer.transform([query])
         
@@ -62,7 +70,7 @@ class GutenbergCorpus:
         top_indices = similarities.argsort()[-top_k:][::-1]
         
         # 結果を整形
-        results = []
+        results: List[Dict[str, Any]] = []
         for idx in top_indices:
             book_id = list(self.books.keys())[idx]
             book_info = self.books[book_id]
@@ -75,7 +83,7 @@ class GutenbergCorpus:
         
         return results
     
-    def get_book_info(self, book_id: str) -> Dict:
+    def get_book_info(self, book_id: str) -> Optional[Dict[str, Any]]:
         """特定の本の情報を取得"""
         if book_id in self.books:
             return self.books[book_id]

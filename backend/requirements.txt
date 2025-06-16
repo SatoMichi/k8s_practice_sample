@@ -5,3 +5,7 @@ python-multipart==0.0.9
 pydantic==2.6.1
 numpy==1.26.4
 scikit-learn==1.4.0  # TF-IDFベクトル化用 
+
+# 開発用依存関係
+flake8==7.0.0  # コードスタイルチェック
+mypy==1.8.0  # 型チェック

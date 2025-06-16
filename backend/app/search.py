@@ -1,11 +1,17 @@
 import nltk
-from typing import List, Dict
+from typing import List, Dict, Any, Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from scipy.sparse import csr_matrix
 
 class SearchEngine:
-    def __init__(self):
+    corpus: List[List[str]]
+    corpus_texts: List[str]
+    vectorizer: TfidfVectorizer
+    tfidf_matrix: csr_matrix
+
+    def __init__(self) -> None:
         # NLTKのデータをダウンロード
         try:
             nltk.data.find('corpora/brown')
@@ -24,7 +30,7 @@ class SearchEngine:
         )
         self.tfidf_matrix = self.vectorizer.fit_transform(self.corpus_texts)
 
-    def search(self, query: str, top_k: int = 5) -> List[Dict[str, any]]:
+    def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """
         クエリに基づいてテキストを検索し、類似度スコアと共に結果を返す
         
@@ -48,7 +54,7 @@ class SearchEngine:
         top_indices = np.argsort(similarities)[-top_k:][::-1]
         
         # 結果を整形
-        results = []
+        results: List[Dict[str, Any]] = []
         for idx in top_indices:
             if similarities[idx] > 0:  # 類似度が0より大きい場合のみ追加
                 results.append({

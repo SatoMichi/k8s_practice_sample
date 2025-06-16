@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from .corpus import GutenbergCorpus
 
 app = FastAPI(
@@ -28,21 +28,34 @@ class SearchResponse(BaseModel):
     similarity_score: float
     word_count: int
 
-@app.get("/")
-async def root():
+class BookInfo(BaseModel):
+    book_id: str
+    title: str
+    word_count: int
+
+class BookListResponse(BaseModel):
+    books: List[BookInfo]
+
+class RootResponse(BaseModel):
+    message: str
+    version: str
+    endpoints: Dict[str, str]
+
+@app.get("/", response_model=RootResponse)
+async def root() -> RootResponse:
     """APIのルートエンドポイント"""
-    return {
-        "message": "Gutenberg Search API",
-        "version": "1.0.0",
-        "endpoints": {
+    return RootResponse(
+        message="Gutenberg Search API",
+        version="1.0.0",
+        endpoints={
             "/search": "本を検索する",
             "/books": "利用可能な本のリストを取得",
             "/books/{book_id}": "特定の本の情報を取得"
         }
-    }
+    )
 
 @app.get("/search", response_model=List[SearchResponse])
-async def search_books(q: str, limit: Optional[int] = 5):
+async def search_books(q: str, limit: int = 5) -> List[SearchResponse]:
     """
     本を検索する
     
@@ -57,24 +70,32 @@ async def search_books(q: str, limit: Optional[int] = 5):
         raise HTTPException(status_code=400, detail="検索クエリが必要です")
     
     results = corpus.search(q, top_k=limit)
-    return results
+    return [
+        SearchResponse(
+            book_id=result["book_id"],
+            title=result["title"],
+            similarity_score=result["similarity_score"],
+            word_count=result["word_count"]
+        )
+        for result in results
+    ]
 
-@app.get("/books")
-async def list_books():
+@app.get("/books", response_model=BookListResponse)
+async def list_books() -> BookListResponse:
     """利用可能な本のリストを取得"""
-    return {
-        "books": [
-            {
-                "book_id": book_id,
-                "title": info["title"],
-                "word_count": info["words"]
-            }
+    return BookListResponse(
+        books=[
+            BookInfo(
+                book_id=book_id,
+                title=info["title"],
+                word_count=info["words"]
+            )
             for book_id, info in corpus.books.items()
         ]
-    }
+    )
 
-@app.get("/books/{book_id}")
-async def get_book(book_id: str):
+@app.get("/books/{book_id}", response_model=Dict[str, Any])
+async def get_book(book_id: str) -> Dict[str, Any]:
     """特定の本の情報を取得"""
     book_info = corpus.get_book_info(book_id)
     if not book_info:
