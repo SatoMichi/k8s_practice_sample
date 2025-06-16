@@ -1,6 +1,6 @@
-import pytest
 from fastapi.testclient import TestClient
 from typing import List, Dict, Any
+
 
 def test_search_endpoint(client: TestClient) -> None:
     """検索エンドポイントのテスト"""
@@ -23,6 +23,7 @@ def test_search_endpoint(client: TestClient) -> None:
     data = response.json()
     assert len(data) <= 3
 
+
 def test_books_endpoint(client: TestClient) -> None:
     """利用可能な本のリスト取得エンドポイントのテスト"""
     response = client.get("/books")
@@ -37,6 +38,7 @@ def test_books_endpoint(client: TestClient) -> None:
         for book in data["books"]
     )
 
+
 def test_book_detail_endpoint(client: TestClient) -> None:
     """特定の本の詳細情報取得エンドポイントのテスト"""
     # 存在する本のテスト
@@ -50,4 +52,4 @@ def test_book_detail_endpoint(client: TestClient) -> None:
 
     # 存在しない本のテスト
     response = client.get("/books/non-existent-book.txt")
-    assert response.status_code == 404 
+    assert response.status_code == 404

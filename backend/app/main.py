@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 from .corpus import GutenbergCorpus
+
 
 app = FastAPI(
     title="Gutenberg Search API",
@@ -22,24 +23,29 @@ app.add_middleware(
 # コーパスの初期化
 corpus = GutenbergCorpus()
 
+
 class SearchResponse(BaseModel):
     book_id: str
     title: str
     similarity_score: float
     word_count: int
 
+
 class BookInfo(BaseModel):
     book_id: str
     title: str
     word_count: int
 
+
 class BookListResponse(BaseModel):
     books: List[BookInfo]
+
 
 class RootResponse(BaseModel):
     message: str
     version: str
     endpoints: Dict[str, str]
+
 
 @app.get("/", response_model=RootResponse)
 async def root() -> RootResponse:
@@ -54,21 +60,22 @@ async def root() -> RootResponse:
         }
     )
 
+
 @app.get("/search", response_model=List[SearchResponse])
 async def search_books(q: str, limit: int = 5) -> List[SearchResponse]:
     """
     本を検索する
-    
+
     Args:
         q: 検索クエリ
         limit: 返す結果の数（デフォルト: 5）
-    
+
     Returns:
         検索結果のリスト
     """
     if not q:
         raise HTTPException(status_code=400, detail="検索クエリが必要です")
-    
+
     results = corpus.search(q, top_k=limit)
     return [
         SearchResponse(
@@ -79,6 +86,7 @@ async def search_books(q: str, limit: int = 5) -> List[SearchResponse]:
         )
         for result in results
     ]
+
 
 @app.get("/books", response_model=BookListResponse)
 async def list_books() -> BookListResponse:
@@ -94,10 +102,11 @@ async def list_books() -> BookListResponse:
         ]
     )
 
+
 @app.get("/books/{book_id}", response_model=Dict[str, Any])
 async def get_book(book_id: str) -> Dict[str, Any]:
     """特定の本の情報を取得"""
     book_info = corpus.get_book_info(book_id)
     if not book_info:
         raise HTTPException(status_code=404, detail="本が見つかりません")
-    return book_info 
+    return book_info
