@@ -22,6 +22,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Debug directory structure
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Directory contents:"
+        ls -la
+        echo "Parent directory contents:"
+        ls -la ..
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -31,13 +39,30 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd frontend
+        echo "Current directory: $(pwd)"
+        if [ -d "frontend" ]; then
+          cd frontend
+        elif [ -d "../frontend" ]; then
+          cd ../frontend
+        else
+          echo "Error: frontend directory not found"
+          exit 1
+        fi
+        echo "Changed to directory: $(pwd)"
         npm ci
 
     - name: Check source files
       run: |
-        cd frontend
         echo "Current directory: $(pwd)"
+        if [ -d "frontend" ]; then
+          cd frontend
+        elif [ -d "../frontend" ]; then
+          cd ../frontend
+        else
+          echo "Error: frontend directory not found"
+          exit 1
+        fi
+        echo "Changed to directory: $(pwd)"
         echo "Directory contents:"
         ls -la
         echo "src/lib contents:"
@@ -48,7 +73,16 @@ jobs:
 
     - name: Run build
       run: |
-        cd frontend
+        echo "Current directory: $(pwd)"
+        if [ -d "frontend" ]; then
+          cd frontend
+        elif [ -d "../frontend" ]; then
+          cd ../frontend
+        else
+          echo "Error: frontend directory not found"
+          exit 1
+        fi
+        echo "Changed to directory: $(pwd)"
         npm run build
 
   build-and-push:
