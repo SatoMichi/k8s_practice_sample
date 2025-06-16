@@ -1,0 +1,11 @@
+jobs:
+  update-image-tag:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Update image tags
+      run: |
+        cd k8s/base
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:sha-5b72ac8
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:sha-de2beff

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- frontend.yaml
+- backend.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: gutenberg-search
+
+images:
+- name: ghcr.io/satomichi/k8s-practice-frontend
+  newTag: sha-5b72ac8
+- name: ghcr.io/satomichi/k8s-practice-backend
+  newTag: sha-de2beff
