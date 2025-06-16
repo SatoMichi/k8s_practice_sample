@@ -33,9 +33,12 @@ class GutenbergCorpus:
             try:
                 # 本のテキストを取得
                 text = ' '.join(gutenberg.words(book_id))
+                # タイトルから著者名を抽出（例: "austen-emma.txt" -> "Jane Austen"）
+                author = self._extract_author(book_id)
                 # 本の情報を保存
                 self.books[book_id] = {
                     'title': book_id.replace('.txt', ''),
+                    'author': author,
                     'text': text,
                     'words': len(gutenberg.words(book_id))
                 }
@@ -45,6 +48,32 @@ class GutenbergCorpus:
         # TF-IDFベクトルを計算
         texts = [book['text'] for book in self.books.values()]
         self.tfidf_matrix = self.vectorizer.fit_transform(texts)
+
+    def _extract_author(self, book_id: str) -> str:
+        """本のIDから著者名を抽出"""
+        # 本のIDから著者名を抽出するロジック
+        # 例: "austen-emma.txt" -> "Jane Austen"
+        author_map = {
+            'austen-emma': 'Jane Austen',
+            'austen-persuasion': 'Jane Austen',
+            'austen-sense': 'Jane Austen',
+            'blake-poems': 'William Blake',
+            'bryant-stories': 'William Cullen Bryant',
+            'burgess-busterbrown': 'Thornton W. Burgess',
+            'carroll-alice': 'Lewis Carroll',
+            'chesterton-ball': 'G.K. Chesterton',
+            'chesterton-brown': 'G.K. Chesterton',
+            'chesterton-thursday': 'G.K. Chesterton',
+            'edgeworth-parents': 'Maria Edgeworth',
+            'melville-moby_dick': 'Herman Melville',
+            'milton-paradise': 'John Milton',
+            'shakespeare-caesar': 'William Shakespeare',
+            'shakespeare-hamlet': 'William Shakespeare',
+            'shakespeare-macbeth': 'William Shakespeare',
+            'whitman-leaves': 'Walt Whitman',
+            'wordsworth-poems': 'William Wordsworth'
+        }
+        return author_map.get(book_id.replace('.txt', ''), 'Unknown Author')
 
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """
@@ -77,6 +106,7 @@ class GutenbergCorpus:
             results.append({
                 'book_id': book_id,
                 'title': book_info['title'],
+                'author': book_info['author'],
                 'similarity_score': float(similarities[idx]),
                 'word_count': book_info['words']
             })

@@ -11,7 +11,12 @@ def test_search_endpoint(client: TestClient) -> None:
     assert isinstance(data, list)
     assert len(data) > 0
     assert all(isinstance(item, dict) for item in data)
-    assert all("title" in item and "similarity_score" in item for item in data)
+    assert all(
+        "title" in item and 
+        "similarity_score" in item and 
+        "author" in item
+        for item in data
+    )
 
     # 空のクエリのテスト
     response = client.get("/search?q=")

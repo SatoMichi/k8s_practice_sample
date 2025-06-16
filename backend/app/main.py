@@ -27,6 +27,7 @@ corpus = GutenbergCorpus()
 class SearchResponse(BaseModel):
     book_id: str
     title: str
+    author: str
     similarity_score: float
     word_count: int
 
@@ -81,6 +82,7 @@ async def search_books(q: str, limit: int = 5) -> List[SearchResponse]:
         SearchResponse(
             book_id=result["book_id"],
             title=result["title"],
+            author=result["author"],
             similarity_score=result["similarity_score"],
             word_count=result["word_count"]
         )
