@@ -22,11 +22,11 @@ def test_search_endpoint() -> None:
     assert len(data) > 0
     assert all(isinstance(item, dict) for item in data)
     assert all(
-        "book_id" in item and
-        "title" in item and
-        "similarity_score" in item and
-        "author" in item and
-        "word_count" in item
+        ("book_id" in item
+         and "title" in item
+         and "similarity_score" in item
+         and "author" in item
+         and "word_count" in item)
         for item in data
     )
 
@@ -49,3 +49,19 @@ def test_search_engine_search(search_engine: SearchEngine) -> None:
     assert all(isinstance(item, dict) for item in results)
     assert all("text" in item for item in results)
     assert all("score" in item for item in results)
+
+
+def test_search_results(search_engine: SearchEngine) -> None:
+    """SearchEngineの検索結果の形式をテスト"""
+    results = search_engine.search("love")
+    assert len(results) > 0
+
+    def is_valid_result(result: Dict[str, Any]) -> bool:
+        return (
+            "text" in result
+            and "score" in result
+            and isinstance(result["text"], str)
+            and isinstance(result["score"], float)
+        )
+
+    assert all(is_valid_result(result) for result in results)
