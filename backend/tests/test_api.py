@@ -10,11 +10,11 @@ def test_search_endpoint(client: TestClient):
     assert isinstance(data, list)
     assert len(data) > 0
     assert all(isinstance(item, dict) for item in data)
-    assert all("title" in item and "similarity" in item for item in data)
+    assert all("title" in item and "similarity_score" in item for item in data)
 
     # 空のクエリのテスト
     response = client.get("/search?q=")
-    assert response.status_code == 422  # Validation Error
+    assert response.status_code == 400  # バリデーションエラー
 
     # limitパラメータのテスト
     response = client.get("/search?q=love&limit=3")
@@ -27,9 +27,14 @@ def test_books_endpoint(client: TestClient):
     response = client.get("/books")
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) > 0
-    assert all(isinstance(item, str) for item in data)
+    assert isinstance(data, dict)
+    assert "books" in data
+    assert isinstance(data["books"], list)
+    assert len(data["books"]) > 0
+    assert all(
+        "book_id" in book and "title" in book and "word_count" in book
+        for book in data["books"]
+    )
 
 def test_book_detail_endpoint(client: TestClient):
     """特定の本の詳細情報取得エンドポイントのテスト"""
@@ -39,7 +44,8 @@ def test_book_detail_endpoint(client: TestClient):
     data = response.json()
     assert isinstance(data, dict)
     assert "title" in data
-    assert "content" in data
+    assert "text" in data
+    assert "words" in data
 
     # 存在しない本のテスト
     response = client.get("/books/non-existent-book.txt")
