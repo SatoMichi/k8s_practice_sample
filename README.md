@@ -6,9 +6,11 @@
 3. [システム構成](#3-システム構成)
 4. [開発環境](#4-開発環境)
 5. [Docker環境](#5-docker環境)
-6. [検索アルゴリズム](#6-検索アルゴリズム)
-7. [テスト](#7-テスト)
-8. [今後の改善計画](#8-今後の改善計画)
+6. [Kubernetes環境](#6-kubernetes環境)
+7. [検索アルゴリズム](#7-検索アルゴリズム)
+8. [テスト](#8-テスト)
+9. [CI/CD](#9-cicd)
+10. [今後の改善計画](#10-今後の改善計画)
 
 ## 1. プロジェクト概要
 
@@ -16,12 +18,14 @@
 - Gutenbergコーパスを使用した本の検索エンジンの実装
 - フルスタック開発の実践（FastAPI + Svelte）
 - コンテナ化とKubernetesデプロイの学習
+- CI/CDパイプラインの構築
 
 ### 主な機能
 - 本の全文検索
 - TF-IDFとコサイン類似度による検索結果のランキング
 - モダンなUI/UX
 - RESTful API
+- Kubernetes環境でのスケーラブルなデプロイ
 
 ## 2. クイックスタート
 
@@ -38,6 +42,23 @@ docker-compose up --build
 - フロントエンド: http://localhost:80
 - バックエンドAPI: http://localhost:8000
 - APIドキュメント: http://localhost:8000/docs
+
+### Kubernetes環境での実行
+```bash
+# 名前空間の確認
+kubectl get namespaces
+
+# アプリケーションのデプロイ（satomichi名前空間を使用）
+kubectl apply -k k8s/base/ -n satomichi
+
+# ポートフォワーディング
+kubectl port-forward svc/gutenberg-frontend 8080:80 -n satomichi
+kubectl port-forward svc/gutenberg-backend 8000:8000 -n satomichi
+```
+
+アクセス方法：
+- フロントエンド: http://localhost:8080
+- バックエンドAPI: http://localhost:8000
 
 ### ローカル環境での実行
 ```bash
@@ -59,10 +80,17 @@ npm run dev
 ### アーキテクチャ
 ```
 k8s_practice_sample/
-├── backend/      # FastAPIバックエンド
-│   ├── app/     # アプリケーションコード
-│   └── tests/   # テストコード
-├── frontend/     # Svelteフロントエンド
+├── backend/          # FastAPIバックエンド
+│   ├── app/         # アプリケーションコード
+│   ├── tests/       # テストコード
+│   └── Dockerfile   # コンテナ設定
+├── frontend/         # Svelteフロントエンド
+│   ├── src/         # ソースコード
+│   ├── public/      # 静的ファイル
+│   └── Dockerfile   # コンテナ設定
+├── k8s/             # Kubernetes設定
+│   ├── base/        # 基本マニフェスト
+│   └── overlays/    # 環境別設定
 ├── docker-compose.yml
 ├── README.md
 └── .gitignore
@@ -75,13 +103,19 @@ k8s_practice_sample/
   - scikit-learn（TF-IDF）
   - Uvicorn
   - pytest（テスト）
+  - mypy（型チェック）
 
 - **フロントエンド**
   - Svelte
   - Vite
   - Tailwind CSS
   - fetch API
-  - Vitest（テスト）
+
+- **インフラ**
+  - Docker
+  - Docker Compose
+  - Kubernetes
+  - GitHub Actions（CI/CD）
 
 ## 4. 開発環境
 
@@ -91,7 +125,7 @@ k8s_practice_sample/
 - npm 9以上
 - Docker（オプション）
 - Docker Compose（オプション）
-- Colima（macOS + Dockerの場合）
+- kubectl（Kubernetes環境の場合）
 
 ### バックエンド開発
 ```bash
@@ -107,9 +141,10 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 
 # テストの実行
-pytest tests/  # すべてのテスト
-pytest tests/ -v  # 詳細な出力
-pytest tests/ -k "test_search"  # 特定のテスト
+pytest tests/ -v
+
+# 型チェック
+mypy app/ tests/
 ```
 
 ### フロントエンド開発
@@ -121,9 +156,11 @@ npm install
 # 開発サーバーの起動
 npm run dev
 
-# テストの実行
-npm test  # すべてのテスト
-npm test -- -t "Search"  # 特定のテスト
+# ビルド
+npm run build
+
+# リンター
+npm run lint
 ```
 
 ## 5. Docker環境
@@ -148,16 +185,56 @@ npm test -- -t "Search"  # 特定のテスト
   - 静的ファイルのキャッシュ設定
 
 ### 開発環境での利用
-- ホットリロード対応
-- ソースコードのマウント
-- デバッグログの表示
+```bash
+# アプリケーションの起動
+docker-compose up --build
 
-### 本番環境での利用
-- 最適化されたビルド
-- セキュリティ設定
-- パフォーマンスチューニング
+# ログの確認
+docker-compose logs -f
 
-## 6. 検索アルゴリズム
+# 停止
+docker-compose down
+```
+
+## 6. Kubernetes環境
+
+### デプロイ方法
+```bash
+# 現在のクラスター情報確認
+kubectl cluster-info
+
+# 名前空間の確認
+kubectl get namespaces
+
+# アプリケーションのデプロイ
+kubectl apply -k k8s/base/ -n satomichi
+
+# デプロイ状況の確認
+kubectl get all -n satomichi
+```
+
+### アクセス方法
+```bash
+# ポートフォワーディング
+kubectl port-forward svc/gutenberg-frontend 8080:80 -n satomichi
+kubectl port-forward svc/gutenberg-backend 8000:8000 -n satomichi
+
+# アプリケーションの動作確認
+curl http://localhost:8000/
+curl http://localhost:8080/
+```
+
+### ログとデバッグ
+```bash
+# ポッドのログ確認
+kubectl logs -f deployment/gutenberg-frontend -n satomichi
+kubectl logs -f deployment/gutenberg-backend -n satomichi
+
+# ポッドの詳細確認
+kubectl describe pod <pod-name> -n satomichi
+```
+
+## 7. 検索アルゴリズム
 
 ### TF-IDFとコサイン類似度による検索
 
@@ -183,41 +260,57 @@ npm test -- -t "Search"  # 特定のテスト
    - クエリのベクトル化
    - コサイン類似度によるランキング
 
-#### 実装の特徴
-- 単語の重要度を考慮した検索
-- ストップワードの自動除外
-- 大文字小文字の正規化
-- 数学的な類似性計算
+#### 利用可能な本
+現在19冊の本が利用可能：
+- Austen（Emma, Persuasion, Sense and Sensibility）
+- Bible（King James Version）
+- Blake（Poems）
+- Bryant（Stories）
+- Burgess（Buster Brown）
+- Carroll（Alice in Wonderland）
+- Chesterton（Ball, Brown, Thursday）
+- Edgeworth（Parents）
+- Melville（Moby Dick）
+- Milton（Paradise Lost）
+- Shakespeare（Caesar, Hamlet, Macbeth）
+- Whitman（Leaves of Grass）
 
-## 7. テスト
+## 8. テスト
 
 ### バックエンドテスト
-1. **ユニットテスト**
-   - `pytest`を使用
-   - テストファイル: `backend/tests/`
-   - 主要なテストケース:
-     - 検索エンドポイント
-     - 本の詳細情報取得
-   - カバレッジ確認: `pytest --cov=app tests/`
+```bash
+cd backend
+# テストの実行
+pytest tests/ -v
 
-2. **統合テスト**
-   - FastAPIの`TestClient`を使用
-   - エンドポイント間の連携テスト
-   - データベース連携テスト
+# カバレッジ確認
+pytest --cov=app tests/
+```
 
 ### フロントエンドテスト
-1. **コンポーネントテスト**
-   - `Vitest`を使用
-   - テストファイル: `frontend/__tests__/`
-   - 主要なテストケース:
-     - 検索フォーム
-     - 検索結果表示
+```bash
+cd frontend
+# ビルドテスト
+npm run build
+```
 
-2. **E2Eテスト**
-   - Playwrightを使用（予定）
-   - ユーザーフロー全体のテスト
+## 9. CI/CD
 
-## 8. 今後の改善計画
+### GitHub Actions
+- **バックエンドCI**: `.github/workflows/backend-ci.yml`
+  - テスト実行
+  - 型チェック
+  - Dockerイメージのビルドとプッシュ
+
+- **フロントエンドCI**: `.github/workflows/frontend-ci.yml`
+  - ビルドテスト
+  - Dockerイメージのビルドとプッシュ
+
+### コンテナイメージ
+- **バックエンド**: `ghcr.io/satomichi/k8s-practice-backend`
+- **フロントエンド**: `ghcr.io/satomichi/k8s-practice-frontend`
+
+## 10. 今後の改善計画
 
 ### 検索機能の改善
 - [ ] ステミング（語幹化）の追加
@@ -233,11 +326,23 @@ npm test -- -t "Search"  # 特定のテスト
 - [ ] ダークモード対応
 - [ ] アクセシビリティの向上
 
+### インフラの改善
+- [ ] Ingress Controllerの設定
+- [ ] SSL/TLS証明書の設定
+- [ ] モニタリングの追加
+- [ ] ログ集約の実装
+- [ ] 自動スケーリングの設定
+
 ### テストの拡充
-- [ ] バックエンド
-  - [ ] パフォーマンステストの追加
-  - [ ] エッジケースのテスト追加
-- [ ] フロントエンド
-  - [ ] E2Eテストの実装
-  - [ ] パフォーマンステストの追加
-  - [ ] アクセシビリティテストの追加
+- [ ] フロントエンドのユニットテスト
+- [ ] E2Eテストの実装
+- [ ] パフォーマンステストの追加
+- [ ] セキュリティテストの追加
+
+## ライセンス
+
+このプロジェクトはMITライセンスの下で公開されています。
+
+## 貢献
+
+プルリクエストやイシューの報告を歓迎します。貢献する前に、まずイシューを開いて変更内容について議論してください。
