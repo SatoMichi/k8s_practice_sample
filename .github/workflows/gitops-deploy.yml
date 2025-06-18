@@ -1,0 +1,38 @@
+name: GitOps Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  update-image-tags:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update image tags
+      run: |
+        # 最新のコミットハッシュを取得
+        COMMIT_SHA=$(git rev-parse --short HEAD)
+        
+        # dev環境のイメージタグを更新
+        cd k8s/overlays/dev
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:$COMMIT_SHA
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:$COMMIT_SHA
+        
+        # prod環境のイメージタグを更新
+        cd ../prod
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:$COMMIT_SHA
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:$COMMIT_SHA
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Update image tags to ${{ github.sha }}" || exit 0
+        git push

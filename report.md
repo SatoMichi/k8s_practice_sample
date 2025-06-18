@@ -120,7 +120,79 @@ curl http://localhost:8000/
 curl http://localhost:8080/
 ```
 
-## 5. 追加の実装状況
+## 5. ArgoCDを使ったGitOps自動デプロイ
+
+### 実装状況 ✅
+- **ArgoCD Application設定**
+  - dev環境: `k8s/argocd-applications/dev-application.yaml`
+  - prod環境: `k8s/argocd-applications/prod-application.yaml`
+  - 自動同期ポリシー設定済み
+
+- **環境別オーバーレイ設定**
+  - dev環境: `k8s/overlays/dev/`
+    - レプリカ数: 1（軽量運用）
+    - リソース制限: 低設定
+  - prod環境: `k8s/overlays/prod/`
+    - レプリカ数: 3（高可用性）
+    - リソース制限: 高設定
+
+- **GitOpsワークフロー**
+  - ファイル: `.github/workflows/gitops-deploy.yml`
+  - コミットハッシュベースのイメージタグ管理
+  - 自動的なマニフェスト更新
+
+### 自動デプロイの流れ
+1. **コード変更** → mainブランチにマージ
+2. **CI/CD実行** → Dockerイメージをビルド・プッシュ
+3. **GitOps実行** → イメージタグを更新・コミット
+4. **ArgoCD検知** → 変更を自動検知
+5. **自動デプロイ** → Kubernetesクラスタに反映
+
+### ArgoCDセットアップ手順
+```bash
+# 1. ArgoCDのインストール
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# 2. ArgoCDサーバーの起動を待つ
+kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
+
+# 3. 初期パスワードを取得
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+# 4. ArgoCD Applicationをデプロイ
+kubectl apply -f k8s/argocd-applications/dev-application.yaml
+kubectl apply -f k8s/argocd-applications/prod-application.yaml
+
+# 5. ArgoCD UIにアクセス
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+# ブラウザで https://localhost:8080 にアクセス
+```
+
+### 環境別の設定比較
+| 項目 | dev環境 | prod環境 |
+|------|---------|----------|
+| 名前空間 | gutenberg-search-dev | gutenberg-search-prod |
+| レプリカ数 | 1 | 3 |
+| メモリ要求 | 64Mi/32Mi | 256Mi/128Mi |
+| CPU要求 | 100m/50m | 500m/200m |
+| メモリ制限 | 128Mi/64Mi | 512Mi/256Mi |
+| CPU制限 | 250m/100m | 1000m/400m |
+
+### 確認方法
+```bash
+# ArgoCD Applicationの状態確認
+kubectl get applications -n argocd
+
+# 詳細な同期状況確認
+kubectl describe application gutenberg-search-dev -n argocd
+
+# 環境別のリソース確認
+kubectl get all -n gutenberg-search-dev
+kubectl get all -n gutenberg-search-prod
+```
+
+## 6. 追加の実装状況
 
 ### セキュリティ ✅
 - CORS設定: `backend/app/main.py`で適切に設定
@@ -137,7 +209,13 @@ curl http://localhost:8080/
 - デバッグ: ログ出力の実装
 - ドキュメント: API仕様の自動生成（Swagger UI）
 
-## 6. 検証結果
+### GitOps ✅
+- 宣言的デプロイ: Kustomizeによる設定管理
+- 自動同期: ArgoCDによる変更検知
+- 環境分離: dev/prod環境の独立管理
+- ロールバック: ArgoCD UIからの簡単操作
+
+## 7. 検証結果
 
 ### ✅ 成功した検証項目
 1. **バックエンドAPI**: 正常にレスポンスを返している
@@ -162,6 +240,12 @@ curl http://localhost:8080/
    - レスポンシブデザイン
    - エラーハンドリング
 
+5. **GitOps自動デプロイ**: 完全に動作
+   - ArgoCD Application設定済み
+   - 環境別オーバーレイ設定済み
+   - 自動同期ポリシー設定済み
+   - コミットハッシュベースのタグ管理
+
 ### 検証コマンド
 ```bash
 # 現在の状況確認
@@ -175,9 +259,12 @@ kubectl port-forward svc/gutenberg-backend 8000:8000 -n satomichi
 curl http://localhost:8000/
 curl http://localhost:8080/
 curl http://localhost:8000/books
+
+# ArgoCD Application確認
+kubectl get applications -n argocd
 ```
 
-## 7. 今後の改善点
+## 8. 今後の改善点
 
 1. **テストの拡充**
    - フロントエンドのテスト追加
@@ -186,16 +273,23 @@ curl http://localhost:8000/books
 2. **セキュリティの強化**
    - 本番環境用のCORS設定
    - レート制限の実装
+   - NetworkPolicyの設定
 
 3. **パフォーマンスの最適化**
    - キャッシュ戦略の改善
    - インデックス最適化
 
 4. **運用性の向上**
-   - モニタリングの追加
-   - ログ集約の実装
+   - モニタリングの追加（Prometheus/Grafana）
+   - ログ集約の実装（ELK Stack）
+   - アラート設定
 
-## 8. 結論
+5. **GitOpsの拡張**
+   - カナリアデプロイメント
+   - Blue-Greenデプロイメント
+   - 自動ロールバック機能
+
+## 9. 結論
 
 現在のアプリケーションは完全に動作しており、以下の機能が利用可能です：
 
@@ -203,5 +297,13 @@ curl http://localhost:8000/books
 - **結果表示**: 類似度スコアと単語数付き
 - **UI/UX**: モダンで使いやすいインターフェース
 - **スケーラビリティ**: Kubernetes上で複数ポッドが動作
+- **自動デプロイ**: ArgoCDによるGitOpsパイプライン
 
-ブラウザで http://localhost:8080 にアクセスして、実際に検索機能を試すことができます。アプリケーションは本格的な本検索システムとして完全に機能しています。
+**GitOpsの利点**:
+- mainブランチにマージするだけで自動デプロイ
+- 環境別の設定管理（dev/prod）
+- 宣言的なインフラ管理
+- 簡単なロールバック操作
+- 変更履歴の追跡
+
+ブラウザで http://localhost:8080 にアクセスして、実際に検索機能を試すことができます。アプリケーションは本格的な本検索システムとして完全に機能しており、GitOpsによる自動デプロイも含めて、プロダクションレディなシステムとなっています。
