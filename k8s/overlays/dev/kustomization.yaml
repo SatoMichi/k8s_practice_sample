@@ -12,10 +12,10 @@ patchesStrategicMerge:
 images:
 - name: ghcr.io/satomichi/k8s-practice-backend
   newName: ghcr.io/satomichi/k8s-practice-backend
-  newTag: de70b7b
+  newTag: d2a232d
 - name: ghcr.io/satomichi/k8s-practice-frontend
   newName: ghcr.io/satomichi/k8s-practice-frontend
-  newTag: de70b7b
+  newTag: d2a232d
 
 commonLabels:
   environment: dev
