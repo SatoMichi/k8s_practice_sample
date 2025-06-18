@@ -10,10 +10,12 @@ patchesStrategicMerge:
 - deployment-patch.yaml
 
 images:
-- name: ghcr.io/satomichi/k8s-practice-frontend
-  newTag: latest
 - name: ghcr.io/satomichi/k8s-practice-backend
-  newTag: latest
+  newName: ghcr.io/satomichi/k8s-practice-backend
+  newTag: c9823b0
+- name: ghcr.io/satomichi/k8s-practice-frontend
+  newName: ghcr.io/satomichi/k8s-practice-frontend
+  newTag: c9823b0
 
 commonLabels:
   environment: prod
