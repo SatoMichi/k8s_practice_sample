@@ -25,5 +25,3 @@ images:
 labels:
 - pairs:
     environment: satomichi
-
-namePrefix: ""
