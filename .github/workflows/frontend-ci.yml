@@ -28,7 +28,7 @@ jobs:
     - name: Run tests
       run: |
         cd frontend
-        npm test -- --passWithNoTests
+        npm test
 
   build-and-push:
     needs: test
@@ -51,7 +51,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/k8s-practice-frontend
+        images: ghcr.io/SatoMichi/k8s-practice-frontend
         tags: |
           type=ref,event=branch
           type=ref,event=pr
