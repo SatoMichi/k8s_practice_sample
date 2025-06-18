@@ -49,7 +49,8 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/k8s-practice-backend
+        images: |
+          ghcr.io/SatoMichi/k8s-practice-backend
         tags: |
           type=ref,event=branch
           type=ref,event=pr
