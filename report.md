@@ -140,6 +140,26 @@ curl http://localhost:8080/
   - 自動的なマニフェスト更新
   - 無限ループ防止機能付き
 
+### GitHub Container Registry権限問題の解決 ✅
+**発生した問題**: `denied: installation not allowed to Write organization package`
+
+**根本原因分析**:
+- GitHub Container Registryはパッケージレベルでの権限管理を実施
+- リポジトリ名は小文字必須（`ghcr.io/satomichi/` が正しい）
+- `GITHUB_TOKEN`使用時は、パッケージ側でのリポジトリアクセス明示的許可が必要
+
+**実装した解決策**:
+1. **全イメージ名の小文字統一**: `ghcr.io/SatoMichi/` → `ghcr.io/satomichi/`
+2. **ワークフロー権限の明示的設定**:
+   ```yaml
+   permissions:
+     contents: read
+     packages: write
+     attestations: write
+     id-token: write
+   ```
+3. **GitHub Web UI でのパッケージ権限設定**: Organization → Packages → Package settings → Manage Actions access
+
 ### 自動デプロイの流れ
 1. **コード変更** → mainブランチにマージ
 2. **CI/CD実行** → Dockerイメージをビルド・プッシュ
@@ -190,6 +210,27 @@ kubectl get all -n satomichi
 # ArgoCD UIでの確認
 kubectl port-forward svc/argo-cd-argocd-server -n argocd 8080:443
 ```
+
+### トラブルシューティング記録 📝
+**主要な問題と解決**:
+
+1. **GitHub Container Registry権限エラー** (解決済み)
+   - **問題**: `denied: installation not allowed to Write organization package`
+   - **根本原因**: パッケージレベルでの権限管理の理解不足
+   - **解決**: ワークフロー権限設定 + GitHub Web UI でのパッケージ権限設定
+
+2. **イメージ名の大文字小文字問題** (解決済み)
+   - **問題**: `ghcr.io/SatoMichi/` vs `ghcr.io/satomichi/` の混在
+   - **解決**: GitHub Container Registryの小文字必須ルールに従い統一
+
+**コミット履歴**:
+- `67ec331`: 全イメージ名を小文字に統一（GHCR互換性対応）  
+- `cb125cb`: ワークフローに明示的なGHCR権限を追加
+
+**重要な教訓**: 
+- 「視野を広く持って、本当にコードの問題？」→ プラットフォーム設定が根本原因
+- GitHubのセキュリティモデル（パッケージ単位の権限管理）の理解が必須
+- コードレベルとプラットフォームレベルの両方の修正が必要
 
 ## 6. 追加の実装状況
 

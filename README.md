@@ -294,7 +294,7 @@ cd frontend
 npm run build
 ```
 
-## 9. CI/CD
+## 9. CI/CD & GitOps
 
 ### GitHub Actions
 - **バックエンドCI**: `.github/workflows/backend-ci.yml`
@@ -306,11 +306,56 @@ npm run build
   - ビルドテスト
   - Dockerイメージのビルドとプッシュ
 
+- **GitOps Deploy**: `.github/workflows/gitops-deploy.yml`
+  - イメージタグの自動更新
+  - Kubernetesマニフェストのコミット
+  - ArgoCDによる自動同期トリガー
+
+### ArgoCD GitOps
+- **自動デプロイ**: mainブランチへのプッシュで自動実行
+- **環境分離**: `k8s/overlays/satomichi/` で環境固有設定
+- **ロールバック**: ArgoCD UIから簡単操作
+- **同期ポリシー**: 自動プルーニングと自己修復有効
+
 ### コンテナイメージ
 - **バックエンド**: `ghcr.io/satomichi/k8s-practice-backend`
 - **フロントエンド**: `ghcr.io/satomichi/k8s-practice-frontend`
 
-## 10. 今後の改善計画
+### GitOps自動デプロイ
+- **ArgoCD Application**: `k8s/argocd-applications/satomichi-application.yaml`
+- **自動同期**: コミット時に自動でKubernetesクラスタに反映
+- **環境管理**: `k8s/overlays/satomichi/` で環境固有設定
+
+## 10. トラブルシューティング記録
+
+### GitHub Container Registry権限問題（解決済み）
+**問題**: `denied: installation not allowed to Write organization package`
+
+**根本原因**: 
+- GitHub Container Registryはパッケージレベルでの権限管理
+- `GITHUB_TOKEN`使用時は、パッケージ側でリポジトリアクセスの明示的許可が必要
+
+**解決方法**:
+1. **ワークフロー権限設定**:
+   ```yaml
+   permissions:
+     contents: read
+     packages: write
+     attestations: write
+     id-token: write
+   ```
+
+2. **GitHub Web UI設定**:
+   - Organization → Packages → 該当パッケージ
+   - Package settings → Manage Actions access
+   - リポジトリを追加、ロールをWriteに設定
+
+### イメージ名規則（解決済み）
+**問題**: `ghcr.io/SatoMichi/` vs `ghcr.io/satomichi/` の混在
+
+**解決**: GitHub Container Registryは小文字必須のため、全て `ghcr.io/satomichi/` に統一
+
+## 11. 今後の改善計画
 
 ### 検索機能の改善
 - [ ] ステミング（語幹化）の追加
@@ -332,6 +377,13 @@ npm run build
 - [ ] モニタリングの追加
 - [ ] ログ集約の実装
 - [ ] 自動スケーリングの設定
+
+### GitOps・CI/CDの改善
+- [x] ArgoCD自動デプロイの実装
+- [x] GitHub Container Registry権限問題の解決
+- [ ] 複数環境への対応（dev/staging/prod）
+- [ ] セキュリティスキャンの追加
+- [ ] デプロイメント通知の実装
 
 ### テストの拡充
 - [ ] フロントエンドのユニットテスト
