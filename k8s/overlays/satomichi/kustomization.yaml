@@ -7,11 +7,11 @@ resources:
 - ../../base
 
 patches:
-- path: deployment-patch.yaml
+- path: backend-patch.yaml
   target:
     kind: Deployment
     name: backend
-- path: deployment-patch.yaml
+- path: frontend-patch.yaml
   target:
     kind: Deployment
     name: frontend
