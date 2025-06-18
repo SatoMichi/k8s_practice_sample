@@ -4,7 +4,13 @@ on:
   push:
     branches: 
       - main
+    paths-ignore:
+      - 'k8s/overlays/**/kustomization.yaml'
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   update-image-tags:
@@ -15,10 +21,16 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Setup kustomize
+      run: |
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/
+
     - name: Update image tags
       run: |
         # 最新のコミットハッシュを取得
         COMMIT_SHA=$(git rev-parse --short HEAD)
+        echo "Updating image tags to: $COMMIT_SHA"
         
         # dev環境のイメージタグを更新
         cd k8s/overlays/dev
@@ -29,11 +41,16 @@ jobs:
         cd ../prod
         kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:$COMMIT_SHA
         kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:$COMMIT_SHA
+        
+        # 変更内容を確認
+        cd ../..
+        git status
+        git diff
 
     - name: Commit and push changes
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git add .
-        git commit -m "Update image tags to ${{ github.sha }}" || exit 0
+        git diff --cached --quiet || git commit -m "Update image tags to ${{ github.sha }}"
         git push
