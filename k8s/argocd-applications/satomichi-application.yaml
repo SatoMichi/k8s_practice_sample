@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gutenberg-search-satomichi
+  namespace: argocd
+  labels:
+    owner: satomichi
+    project: gutenberg-search
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/satomichi/k8s_practice_sample.git
+    targetRevision: main
+    path: k8s/overlays/satomichi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: satomichi
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true
+  revisionHistoryLimit: 10
