@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
 - frontend.yaml
 - backend.yaml
-- ingress.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: gutenberg-search

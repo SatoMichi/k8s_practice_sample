@@ -5,6 +5,7 @@ namespace: satomichi
 
 resources:
 - ../../base
+- ingress.yaml
 
 patches:
 - path: backend-patch.yaml
