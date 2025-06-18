@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/satomichi/k8s_practice_sample.git
+    repoURL: https://github.com/SatoMichi/k8s_practice_sample.git
     targetRevision: main
     path: k8s/overlays/satomichi
   destination:

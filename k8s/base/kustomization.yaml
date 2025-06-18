@@ -9,7 +9,7 @@ commonLabels:
   app.kubernetes.io/part-of: gutenberg-search
 
 images:
-- name: ghcr.io/satomichi/k8s-practice-frontend
+- name: ghcr.io/SatoMichi/k8s-practice-frontend
   newTag: latest
-- name: ghcr.io/satomichi/k8s-practice-backend
+- name: ghcr.io/SatoMichi/k8s-practice-backend
   newTag: latest
