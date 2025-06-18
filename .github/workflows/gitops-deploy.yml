@@ -35,8 +35,8 @@ jobs:
         
         # satomichi環境のイメージタグを更新
         cd k8s/overlays/satomichi
-        kustomize edit set image ghcr.io/SatoMichi/k8s-practice-frontend=ghcr.io/SatoMichi/k8s-practice-frontend:$COMMIT_SHA
-        kustomize edit set image ghcr.io/SatoMichi/k8s-practice-backend=ghcr.io/SatoMichi/k8s-practice-backend:$COMMIT_SHA
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:$COMMIT_SHA
+        kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:$COMMIT_SHA
         
         # 変更内容を確認
         cd ../..

@@ -65,8 +65,8 @@ jobs:
         context: ./frontend
         push: true
         tags: |
-          ghcr.io/SatoMichi/k8s-practice-frontend:latest
-          ghcr.io/SatoMichi/k8s-practice-frontend:main
+          ghcr.io/satomichi/k8s-practice-frontend:latest
+          ghcr.io/satomichi/k8s-practice-frontend:main
         labels: |
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           org.opencontainers.image.revision=${{ github.sha }}
