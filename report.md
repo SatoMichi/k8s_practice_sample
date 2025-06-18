@@ -124,22 +124,21 @@ curl http://localhost:8080/
 
 ### 実装状況 ✅
 - **ArgoCD Application設定**
-  - dev環境: `k8s/argocd-applications/dev-application.yaml`
-  - prod環境: `k8s/argocd-applications/prod-application.yaml`
+  - satomichi環境: `k8s/argocd-applications/satomichi-application.yaml`
   - 自動同期ポリシー設定済み
+  - 既存のArgoCD環境（argocd名前空間）を利用
 
 - **環境別オーバーレイ設定**
-  - dev環境: `k8s/overlays/dev/`
-    - レプリカ数: 1（軽量運用）
-    - リソース制限: 低設定
-  - prod環境: `k8s/overlays/prod/`
-    - レプリカ数: 3（高可用性）
-    - リソース制限: 高設定
+  - satomichi環境: `k8s/overlays/satomichi/`
+    - レプリカ数: 2（本番運用）
+    - リソース制限: 適切な設定
+    - 個別パッチファイル: `backend-patch.yaml`, `frontend-patch.yaml`
 
 - **GitOpsワークフロー**
   - ファイル: `.github/workflows/gitops-deploy.yml`
   - コミットハッシュベースのイメージタグ管理
   - 自動的なマニフェスト更新
+  - 無限ループ防止機能付き
 
 ### 自動デプロイの流れ
 1. **コード変更** → mainブランチにマージ
@@ -148,36 +147,34 @@ curl http://localhost:8080/
 4. **ArgoCD検知** → 変更を自動検知
 5. **自動デプロイ** → Kubernetesクラスタに反映
 
-### ArgoCDセットアップ手順
+### ArgoCDセットアップ手順（既存環境利用）
 ```bash
-# 1. ArgoCDのインストール
-kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# 1. 既存のArgoCD環境を確認
+kubectl get all -n argocd
 
-# 2. ArgoCDサーバーの起動を待つ
-kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
+# 2. ArgoCD UIにアクセス
+kubectl port-forward svc/argo-cd-argocd-server -n argocd 8080:443
 
 # 3. 初期パスワードを取得
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
 # 4. ArgoCD Applicationをデプロイ
-kubectl apply -f k8s/argocd-applications/dev-application.yaml
-kubectl apply -f k8s/argocd-applications/prod-application.yaml
+kubectl apply -f k8s/argocd-applications/satomichi-application.yaml
 
-# 5. ArgoCD UIにアクセス
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-# ブラウザで https://localhost:8080 にアクセス
+# 5. ブラウザで https://localhost:8080 にアクセス
+# ユーザー名: admin
+# パスワード: 上記で取得したパスワード
 ```
 
-### 環境別の設定比較
-| 項目 | dev環境 | prod環境 |
-|------|---------|----------|
-| 名前空間 | gutenberg-search-dev | gutenberg-search-prod |
-| レプリカ数 | 1 | 3 |
-| メモリ要求 | 64Mi/32Mi | 256Mi/128Mi |
-| CPU要求 | 100m/50m | 500m/200m |
-| メモリ制限 | 128Mi/64Mi | 512Mi/256Mi |
-| CPU制限 | 250m/100m | 1000m/400m |
+### 環境設定
+| 項目 | satomichi環境 |
+|------|---------------|
+| 名前空間 | satomichi |
+| レプリカ数 | 2 |
+| メモリ要求 | 128Mi/64Mi |
+| CPU要求 | 200m/100m |
+| メモリ制限 | 256Mi/128Mi |
+| CPU制限 | 500m/200m |
 
 ### 確認方法
 ```bash
@@ -185,11 +182,13 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 kubectl get applications -n argocd
 
 # 詳細な同期状況確認
-kubectl describe application gutenberg-search-dev -n argocd
+kubectl describe application gutenberg-search-satomichi -n argocd
 
-# 環境別のリソース確認
-kubectl get all -n gutenberg-search-dev
-kubectl get all -n gutenberg-search-prod
+# 環境のリソース確認
+kubectl get all -n satomichi
+
+# ArgoCD UIでの確認
+kubectl port-forward svc/argo-cd-argocd-server -n argocd 8080:443
 ```
 
 ## 6. 追加の実装状況
@@ -212,8 +211,9 @@ kubectl get all -n gutenberg-search-prod
 ### GitOps ✅
 - 宣言的デプロイ: Kustomizeによる設定管理
 - 自動同期: ArgoCDによる変更検知
-- 環境分離: dev/prod環境の独立管理
+- 環境分離: satomichi環境の独立管理
 - ロールバック: ArgoCD UIからの簡単操作
+- コミットハッシュベースのタグ管理
 
 ## 7. 検証結果
 
@@ -240,11 +240,12 @@ kubectl get all -n gutenberg-search-prod
    - レスポンシブデザイン
    - エラーハンドリング
 
-5. **GitOps自動デプロイ**: 完全に動作
+5. **GitOps自動デプロイ**: 完全に動作 ✅
    - ArgoCD Application設定済み
    - 環境別オーバーレイ設定済み
    - 自動同期ポリシー設定済み
    - コミットハッシュベースのタグ管理
+   - **実際の動作確認済み**: mainブランチへのプッシュで自動デプロイ成功
 
 ### 検証コマンド
 ```bash
@@ -262,6 +263,9 @@ curl http://localhost:8000/books
 
 # ArgoCD Application確認
 kubectl get applications -n argocd
+
+# ArgoCD UI確認
+kubectl port-forward svc/argo-cd-argocd-server -n argocd 8080:443
 ```
 
 ## 8. 今後の改善点
@@ -301,9 +305,18 @@ kubectl get applications -n argocd
 
 **GitOpsの利点**:
 - mainブランチにマージするだけで自動デプロイ
-- 環境別の設定管理（dev/prod）
+- 環境別の設定管理（satomichi環境）
 - 宣言的なインフラ管理
 - 簡単なロールバック操作
 - 変更履歴の追跡
+- **実際の動作確認済み**: 2025年6月18日に成功
+
+**実装完了項目**:
+- ✅ ArgoCD Application設定
+- ✅ 環境別オーバーレイ設定
+- ✅ GitOpsワークフロー
+- ✅ 自動同期ポリシー
+- ✅ コミットハッシュベースのタグ管理
+- ✅ ArgoCD UIでの監視・管理
 
 ブラウザで http://localhost:8080 にアクセスして、実際に検索機能を試すことができます。アプリケーションは本格的な本検索システムとして完全に機能しており、GitOpsによる自動デプロイも含めて、プロダクションレディなシステムとなっています。
