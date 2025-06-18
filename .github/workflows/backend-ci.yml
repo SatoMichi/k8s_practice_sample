@@ -63,4 +63,5 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
- # Updated Wed Jun 18 15:33:55 JST 2025
+
+# Updated Wed Jun 18 15:45:00 JST 2025 - Force update with correct image names

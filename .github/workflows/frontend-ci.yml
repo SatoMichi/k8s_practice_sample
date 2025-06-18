@@ -57,6 +57,7 @@ jobs:
         echo "GitHub Actor: ${{ github.actor }}"
         echo "GitHub Repository Owner: ${{ github.repository_owner }}"
         echo "Repository: ${{ github.repository }}"
+        echo "Current timestamp: $(date)"
     
     - name: Extract metadata
       id: meta
@@ -73,6 +74,14 @@ jobs:
       run: |
         echo "Tags: ${{ steps.meta.outputs.tags }}"
         echo "Labels: ${{ steps.meta.outputs.labels }}"
+        echo "Full metadata output:"
+        echo "${{ steps.meta.outputs.json }}"
+    
+    - name: Debug - Show Docker command
+      run: |
+        echo "Docker build command will use:"
+        echo "Tags: ${{ steps.meta.outputs.tags }}"
+        echo "Labels: ${{ steps.meta.outputs.labels }}"
     
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -82,4 +91,5 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         no-cache: true
- # Updated Wed Jun 18 15:33:21 JST 2025
+
+# Updated Wed Jun 18 15:45:00 JST 2025 - Force update with correct image names
