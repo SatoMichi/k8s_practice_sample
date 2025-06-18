@@ -32,13 +32,8 @@ jobs:
         COMMIT_SHA=$(git rev-parse --short HEAD)
         echo "Updating image tags to: $COMMIT_SHA"
         
-        # dev環境のイメージタグを更新
-        cd k8s/overlays/dev
-        kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:$COMMIT_SHA
-        kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:$COMMIT_SHA
-        
-        # prod環境のイメージタグを更新
-        cd ../prod
+        # satomichi環境のイメージタグを更新
+        cd k8s/overlays/satomichi
         kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:$COMMIT_SHA
         kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:$COMMIT_SHA
         
