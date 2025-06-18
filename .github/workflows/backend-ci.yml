@@ -3,7 +3,6 @@ name: Backend CI/CD
 on:
   push:
     branches: [ main ]
-    paths: [ 'backend/**' ]
   pull_request:
     branches: [ main ]
     paths: [ 'backend/**' ]
@@ -64,3 +63,4 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }} 
+ 
