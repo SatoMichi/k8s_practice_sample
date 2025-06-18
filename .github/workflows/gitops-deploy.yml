@@ -1,11 +1,11 @@
 name: GitOps Deploy
 
 on:
-  push:
-    branches: 
-      - main
-    paths-ignore:
-      - 'k8s/overlays/**/kustomization.yaml'
+  workflow_run:
+    workflows: ["Backend CI/CD", "Frontend CI/CD"]
+    types:
+      - completed
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,6 +15,7 @@ permissions:
 jobs:
   update-image-tags:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
