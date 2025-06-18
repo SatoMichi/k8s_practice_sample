@@ -18,10 +18,12 @@ patches:
     name: frontend
 
 images:
-- name: ghcr.io/satomichi/k8s-practice-frontend
-  newTag: latest
 - name: ghcr.io/satomichi/k8s-practice-backend
-  newTag: latest
+  newName: ghcr.io/satomichi/k8s-practice-backend
+  newTag: 9de543f
+- name: ghcr.io/satomichi/k8s-practice-frontend
+  newName: ghcr.io/satomichi/k8s-practice-frontend
+  newTag: 9de543f
 
 labels:
 - pairs:
