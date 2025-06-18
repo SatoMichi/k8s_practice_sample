@@ -6,8 +6,15 @@ namespace: satomichi
 resources:
 - ../../base
 
-patchesStrategicMerge:
-- deployment-patch.yaml
+patches:
+- path: deployment-patch.yaml
+  target:
+    kind: Deployment
+    name: backend
+- path: deployment-patch.yaml
+  target:
+    kind: Deployment
+    name: frontend
 
 images:
 - name: ghcr.io/satomichi/k8s-practice-frontend
@@ -15,7 +22,8 @@ images:
 - name: ghcr.io/satomichi/k8s-practice-backend
   newTag: latest
 
-commonLabels:
-  environment: satomichi
+labels:
+- pairs:
+    environment: satomichi
 
 namePrefix: ""
