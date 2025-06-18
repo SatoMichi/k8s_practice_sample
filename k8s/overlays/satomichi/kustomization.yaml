@@ -18,4 +18,4 @@ images:
 commonLabels:
   environment: satomichi
 
-namePrefix: gutenberg-
+namePrefix: ""
