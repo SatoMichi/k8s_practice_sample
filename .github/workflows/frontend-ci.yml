@@ -51,7 +51,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/SatoMichi/k8s-practice-frontend
+        images: ghcr.io/${{ github.repository_owner }}/k8s-practice-frontend
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -64,5 +64,5 @@ jobs:
         context: ./frontend
         push: true
         tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }} 
+        labels: ${{ steps.meta.outputs.labels }}
  # Updated Wed Jun 18 15:33:21 JST 2025
