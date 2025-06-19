@@ -30,7 +30,7 @@
 </script>
 
 <main class="main">
-  <h1 class="title">�� Gutenberg Explorer mini</h1>
+  <h1 class="title">Gutenberg Explorer</h1>
   <Search bind:this={searchComponent} {isLoading} on:search={handleSearch} />
   {#if hasSearched}
     <BookList {books} {isLoading} {error} />
