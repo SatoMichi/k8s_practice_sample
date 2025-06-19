@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: ghcr.io/satomichi/k8s-practice-backend
+        image: ghcr.io/satomichi/k8s-practice-backend:latest
         ports:
         - containerPort: 8000
         resources:

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: ghcr.io/satomichi/k8s-practice-frontend
+        image: ghcr.io/satomichi/k8s-practice-frontend:latest
         ports:
         - containerPort: 80
         resources:
