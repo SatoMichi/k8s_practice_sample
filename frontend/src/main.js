@@ -7,4 +7,4 @@ const app = mount(App, {
 })
 
 export default app
-/* Force rebuild Thu Jun 19 14:36:12 JST 2025 */
+/* Force rebuild with SCSS fix - Thu Jun 19 14:47:30 JST 2025 */
