@@ -28,8 +28,8 @@ images:
 configMapGenerator:
 - name: build-metadata
   literals:
-  - FRONTEND_BUILD_TIME=2025-06-19T08:18:05Z
-  - BACKEND_BUILD_TIME=2025-06-19T08:18:05Z
+  - FRONTEND_BUILD_TIME=2025-06-19T08:22:06Z
+  - BACKEND_BUILD_TIME=2025-06-19T08:22:06Z
 
 labels:
 - pairs:
