@@ -2,7 +2,6 @@
   import Search from './components/Search.svelte'
   import BookList from './components/BookList.svelte'
   import { searchBooks } from './lib/api.js'
-  import './styles/app.scss'
 
   let books = []
   let isLoading = false
