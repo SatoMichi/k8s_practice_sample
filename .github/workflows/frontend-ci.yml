@@ -63,6 +63,7 @@ jobs:
         echo "GitHub Repository Owner: ${{ github.repository_owner }}"
         echo "Repository: ${{ github.repository }}"
         echo "Current timestamp: $(date)"
+        echo "Lowercase actor: $(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')"
     
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -70,9 +71,9 @@ jobs:
         context: ./frontend
         push: true
         tags: |
-          ghcr.io/satomichi/k8s-practice-frontend:latest
-          ghcr.io/satomichi/k8s-practice-frontend:main
-          ghcr.io/satomichi/k8s-practice-frontend:${{ github.sha }}
+          ghcr.io/${{ github.repository_owner }}/k8s-practice-frontend:latest
+          ghcr.io/${{ github.repository_owner }}/k8s-practice-frontend:main
+          ghcr.io/${{ github.repository_owner }}/k8s-practice-frontend:${{ github.sha }}
         labels: |
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           org.opencontainers.image.revision=${{ github.sha }}
@@ -82,4 +83,4 @@ jobs:
           org.opencontainers.image.version=main
         no-cache: true
 
-# Updated Wed Jun 18 15:50:00 JST 2025 - Manual image names to fix permission issue
+# Updated Thu Jun 19 17:10:00 JST 2025 - Fix Container Registry authentication and dynamic repository names
