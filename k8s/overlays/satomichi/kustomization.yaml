@@ -25,6 +25,12 @@ images:
   newName: ghcr.io/satomichi/k8s-practice-frontend
   newTag: latest
 
+configMapGenerator:
+- name: build-metadata
+  literals:
+  - FRONTEND_BUILD_TIME=2025-06-19T16:15:00Z
+  - BACKEND_BUILD_TIME=2025-06-19T16:15:00Z
+
 labels:
 - pairs:
     environment: satomichi

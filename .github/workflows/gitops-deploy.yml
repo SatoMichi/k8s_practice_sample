@@ -1,11 +1,11 @@
 name: GitOps Deploy
 
 on:
-  # workflow_run:
-  #   workflows: ["Backend CI/CD", "Frontend CI/CD"]
-  #   types:
-  #     - completed
-  #   branches: [main]
+  workflow_run:
+    workflows: ["Backend CI/CD", "Frontend CI/CD"]
+    types:
+      - completed
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,31 +15,31 @@ permissions:
 jobs:
   update-image-tags:
     runs-on: ubuntu-latest
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Setup kustomize
+    - name: Update build metadata
       run: |
-        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-        sudo mv kustomize /usr/local/bin/
-
-    - name: Update image tags
-      run: |
-        # 最新のコミットハッシュを取得
-        COMMIT_SHA=$(git rev-parse --short HEAD)
-        echo "Updating image tags to: $COMMIT_SHA"
+        # 現在時刻を取得
+        BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        echo "Updating build metadata to: $BUILD_TIME"
         
-        # satomichi環境のイメージタグを更新
+        # satomichi環境のビルド時刻を更新
         cd k8s/overlays/satomichi
-        kustomize edit set image ghcr.io/satomichi/k8s-practice-frontend=ghcr.io/satomichi/k8s-practice-frontend:$COMMIT_SHA
-        kustomize edit set image ghcr.io/satomichi/k8s-practice-backend=ghcr.io/satomichi/k8s-practice-backend:$COMMIT_SHA
+        
+        # kustomization.yamlのビルド時刻を更新
+        sed -i.bak "s/FRONTEND_BUILD_TIME=.*/FRONTEND_BUILD_TIME=$BUILD_TIME/" kustomization.yaml
+        sed -i.bak "s/BACKEND_BUILD_TIME=.*/BACKEND_BUILD_TIME=$BUILD_TIME/" kustomization.yaml
+        
+        # バックアップファイルを削除
+        rm -f kustomization.yaml.bak
         
         # 変更内容を確認
-        cd ../..
+        cd ../../..
         git status
         git diff
 
@@ -48,5 +48,5 @@ jobs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         git add .
-        git diff --cached --quiet || git commit -m "Update image tags to ${{ github.sha }}"
+        git diff --cached --quiet || git commit -m "Update build metadata to $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
         git push
