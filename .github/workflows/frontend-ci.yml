@@ -72,6 +72,7 @@ jobs:
         tags: |
           ghcr.io/satomichi/k8s-practice-frontend:latest
           ghcr.io/satomichi/k8s-practice-frontend:main
+          ghcr.io/satomichi/k8s-practice-frontend:${{ github.sha }}
         labels: |
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           org.opencontainers.image.revision=${{ github.sha }}
