@@ -8,11 +8,13 @@
   let isLoading = false
   let error = null
   let searchComponent
+  let hasSearched = false
 
   async function handleSearch(event) {
     const { query } = event.detail
     isLoading = true
     error = null
+    hasSearched = true
     
     try {
       books = await searchBooks(query)
@@ -29,7 +31,15 @@
 </script>
 
 <main class="main">
-  <h1 class="title">Gutenberg Search</h1>
+  <h1 class="title">📚 Gutenberg Explorer</h1>
   <Search bind:this={searchComponent} {isLoading} on:search={handleSearch} />
-  <BookList {books} {isLoading} {error} />
+  {#if hasSearched}
+    <BookList {books} {isLoading} {error} />
+  {:else}
+    <div class="welcome-message">
+      <div class="welcome-icon">🔍</div>
+      <h2>プロジェクト・グーテンベルクの世界へようこそ</h2>
+      <p>数千冊の名作を検索して発見しましょう</p>
+    </div>
+  {/if}
 </main>
