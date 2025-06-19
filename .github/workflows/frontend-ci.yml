@@ -64,6 +64,7 @@ jobs:
         echo "Repository: ${{ github.repository }}"
         echo "Current timestamp: $(date)"
         echo "Lowercase actor: $(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')"
+        echo "Lowercase repository owner: $(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')"
     
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -71,9 +72,9 @@ jobs:
         context: ./frontend
         push: true
         tags: |
-          ghcr.io/${{ github.repository_owner }}/k8s-practice-frontend:latest
-          ghcr.io/${{ github.repository_owner }}/k8s-practice-frontend:main
-          ghcr.io/${{ github.repository_owner }}/k8s-practice-frontend:${{ github.sha }}
+          ghcr.io/satomichi/k8s-practice-frontend:latest
+          ghcr.io/satomichi/k8s-practice-frontend:main
+          ghcr.io/satomichi/k8s-practice-frontend:${{ github.sha }}
         labels: |
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           org.opencontainers.image.revision=${{ github.sha }}

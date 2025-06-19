@@ -56,9 +56,9 @@ jobs:
         context: ./backend
         push: true
         tags: |
-          ghcr.io/${{ github.repository_owner }}/k8s-practice-backend:latest
-          ghcr.io/${{ github.repository_owner }}/k8s-practice-backend:main
-          ghcr.io/${{ github.repository_owner }}/k8s-practice-backend:${{ github.sha }}
+          ghcr.io/satomichi/k8s-practice-backend:latest
+          ghcr.io/satomichi/k8s-practice-backend:main
+          ghcr.io/satomichi/k8s-practice-backend:${{ github.sha }}
         labels: |
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           org.opencontainers.image.revision=${{ github.sha }}
